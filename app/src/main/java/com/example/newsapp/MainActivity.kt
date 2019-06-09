@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.text.Html
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -21,6 +22,7 @@ import io.reactivex.schedulers.Schedulers
 import io.realm.Realm
 import io.realm.RealmList
 import io.realm.RealmObject
+import java.lang.Exception
 import kotlin.collections.ArrayList
 
 class MainActivity : AppCompatActivity() {
@@ -82,7 +84,7 @@ open class FeedItem(
 
 class RecAdapter(val items: RealmList<FeedItem>) : RecyclerView.Adapter<RecHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecHolder {
-        val inflater = LayoutInflater.from(parent!!.context)
+        val inflater = LayoutInflater.from(parent.context)
 
         val view = inflater.inflate(R.layout.list_item, parent, false)
         return RecHolder(view)
@@ -94,7 +96,7 @@ class RecAdapter(val items: RealmList<FeedItem>) : RecyclerView.Adapter<RecHolde
 
     override fun onBindViewHolder(holder: RecHolder, position: Int) {
         val item = items[position]!!
-        holder?.bind(item)
+        holder.bind(item)
     }
 
     override fun getItemViewType(position: Int): Int {
@@ -109,9 +111,19 @@ class RecHolder(view: View) : RecyclerView.ViewHolder(view) {
         val vDesc = itemView.findViewById<TextView>(R.id.item_desc)
         val vThumb = itemView.findViewById<ImageView>(R.id.item_thumb)
         vTitle.text = item.title
-        vDesc.text = item.description
 
-        Picasso.with(vThumb.context).load(item.thumbnail).into(vThumb)
+        //<div>
+        //          <img src="https://teletype.in/files/d4/d4692bd6-75e8-4189-ab10-1cab1e89ba77.png"><div>14 января 2019 года во дворце студентов Жолдасбекова города Алматы прошла торжественная церемония закрытия XV Международной Жаутыковской...</div>
+        //        </div>
+
+        vDesc.text = Html.fromHtml((item.description).removeRange(16, 96))
+
+        try {
+            Picasso.with(vThumb.context).load(item.thumbnail).into(vThumb)
+            Log.e("thumbnail", "success")
+        } catch (e: Exception) {
+            Log.e("thumbnail", e.toString())
+        }
 
         itemView.setOnClickListener {
             (vThumb.context as MainActivity).showArticle(item.link)
